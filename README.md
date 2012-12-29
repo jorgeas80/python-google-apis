@@ -1,4 +1,4 @@
 python-google-apis
 ==================
 
-Python code to interact with Google APIs
+Python sources to interact with Google APIs

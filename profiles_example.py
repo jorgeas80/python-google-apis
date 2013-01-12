@@ -55,6 +55,7 @@ class ProfilesSample(object):
     """
     self.gd_client = gdata.contacts.client.ContactsClient(domain = domain)
     self.gd_client.ClientLogin(email, password, 'GoogleInc-ProfilesPythonSample-1')
+    self.username = ''
 
   def PrintFeed(self, feed, ctr=0):
     """Prints out the contents of a feed to the console.
@@ -177,18 +178,20 @@ class ProfilesSample(object):
     self.PrintPaginatedFeed(feed, self.PrintFeed)
 
   def SelectProfile(self):
-    username = raw_input('Please enter your username for the profile: ')
-    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+username
+    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    if username:
+      self.username = username
+
+    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
     
     try:
       entry = self.gd_client.GetProfile(entry_uri)
     except gdata.client.RequestError, e:
       print e
-      return
+    else:
+      self.PrintEntry(entry)
 
-    self.PrintEntry(entry)
-
-
+    
   def UserDefinedFieldValue(self, profile_entry, key):
     i = 0
     for extended_property in profile_entry.user_defined_field:
@@ -199,73 +202,72 @@ class ProfilesSample(object):
 
 
   def DeleteUserDefinedField(self):
-    username = raw_input('Please enter your username for the profile: ')
-    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+username
-
-    #Get profile object
-    entry = self.gd_client.GetProfile(entry_uri)
-
-    key = raw_input('Please enter the user defined field key (ENTER to cancel): ')
-    if not key:
-      return
-
-    (pos, value) = self.UserDefinedFieldValue(entry, key)
-    if value is None:
-      print('%s field not found. Aborting.' % key)
-      return
+    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    if username:
+      self.username = username
+    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
 
     try:
-      del entry.user_defined_field[pos]
-      self.gd_client.Update(entry)
-      print('Entry updated')
-      self.PrintEntry(entry)
-    except ValueError, e:
-      print('Could not remove element: %s' % e)
-      return
-    except gdata.client.RequestError, e:
-      if e.status == 412:
-        # Etags mismatch: handle the exception.
-        print e
-        pass
-    
-    
+      #Get profile object
+      entry = self.gd_client.GetProfile(entry_uri)
 
-  def UpdateProfile(self):
-    username = raw_input('Please enter your username for the profile: ')
-    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+username
-
-    #Get profile object
-    entry = self.gd_client.GetProfile(entry_uri)
-
-    new_key = raw_input('Please enter the user defined field key (ENTER to cancel): ')
-    if not new_key:
-      return
-
-    (pos, new_value) = self.UserDefinedFieldValue(entry, new_key)
-    if new_value is not None:
-      choice = raw_input('Field exists. It will be UPDATED. Continue? (y/n) [n]: ')
-      if not choice or choice.lower().startswith('n'):
+      key = raw_input('Please enter the user defined field key (ENTER to cancel): ')
+      if not key:
         return
 
-    new_value = raw_input('Please enter the user defined field value (ENTER to cancel): ')
+      (pos, value) = self.UserDefinedFieldValue(entry, key)
+      if value is None:
+        print('%s field not found. Aborting.' % key)
+        return
 
-    if new_value:
-      if pos < len(entry.user_defined_field):
-        del entry.user_defined_field[pos]
-      entry.user_defined_field.insert(pos, gdata.contacts.data.UserDefinedField(
-        key = new_key, value = new_value))      
+      del entry.user_defined_field[pos]
+      self.gd_client.Update(entry)
+      
+    except ValueError, e:
+      print('Could not remove element: %s' % e)
+    except gdata.client.RequestError, e:
+      print e
+    else:
+      print('Entry updated')
+      self.PrintEntry(entry)
+
+  def UpdateProfile(self):
+    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    if username:
+      self.username = username
+    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
 
     #Update entry
     try:
+      #Get profile object
+      entry = self.gd_client.GetProfile(entry_uri)
+
+      new_key = raw_input('Please enter the user defined field key (ENTER to cancel): ')
+      if not new_key:
+        return
+
+      (pos, new_value) = self.UserDefinedFieldValue(entry, new_key)
+      if new_value is not None:
+        choice = raw_input('Field exists. It will be UPDATED. Continue? (y/n) [n]: ')
+        if not choice or choice.lower().startswith('n'):
+          return
+
+      new_value = raw_input('Please enter the user defined field value (ENTER to cancel): ')
+
+      if new_value:
+        if pos < len(entry.user_defined_field):
+          del entry.user_defined_field[pos]
+        entry.user_defined_field.insert(pos, gdata.contacts.data.UserDefinedField(
+          key = new_key, value = new_value))
+
       self.gd_client.Update(entry)
+
+      print('Entry updated')
+      self.PrintEntry(entry)
     except gdata.client.RequestError, e:
-      if e.status == 412:
-        # Etags mismatch: handle the exception.
-        print e
-        pass
+      print e
     
-    print('Entry updated')
-    self.PrintEntry(entry)
+
 
   def PrintMenu(self):
     """Displays a menu of options for the user to choose from."""

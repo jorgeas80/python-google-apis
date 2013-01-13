@@ -98,7 +98,7 @@ class ProfilesSample(object):
     if entry.birthday:
       print 'Birthday: %s' % (entry.birthday.when)
     for relation in entry.relation:
-      print 'Relation: %s %s' % (relation.rel, relation.text)
+      print 'Relation %s: %s %s' % (relation.rel, relation.label, relation.text)
     for user_defined_field in entry.user_defined_field:
       print 'UserDefinedField: %s %s' % (user_defined_field.key,
                                          user_defined_field.value)

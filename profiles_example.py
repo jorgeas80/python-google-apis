@@ -56,6 +56,7 @@ class ProfilesSample(object):
     self.gd_client = gdata.contacts.client.ContactsClient(domain = domain)
     self.gd_client.ClientLogin(email, password, 'GoogleInc-ProfilesPythonSample-1')
     self.username = ''
+    self.domain = domain
 
   def PrintFeed(self, feed, ctr=0):
     """Prints out the contents of a feed to the console.
@@ -178,7 +179,7 @@ class ProfilesSample(object):
     self.PrintPaginatedFeed(feed, self.PrintFeed)
 
   def SelectProfile(self):
-    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    username = raw_input('Please enter your username for the profile [%s]@%s: ' % (self.username, self.domain))
     if username:
       self.username = username
 
@@ -202,7 +203,7 @@ class ProfilesSample(object):
 
 
   def DeleteUserDefinedField(self):
-    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    username = raw_input('Please enter your username for the profile [%s]@%s: ' % (self.username, self.domain))
     if username:
       self.username = username
     entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
@@ -232,7 +233,7 @@ class ProfilesSample(object):
       self.PrintEntry(entry)
 
   def UpdateUserDefinedFields(self):
-    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    username = raw_input('Please enter your username for the profile [%s]@%s: ' % (self.username, self.domain))
     if username:
       self.username = username
     entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
@@ -269,7 +270,7 @@ class ProfilesSample(object):
     
 
   def AddRelationElement(self):
-    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    username = raw_input('Please enter your username for the profile [%s]@%s: ' % (self.username, self.domain))
     if username:
       self.username = username
     entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
@@ -309,9 +310,8 @@ class ProfilesSample(object):
       self.PrintEntry(entry)
 
 
-
   def DeleteRelationElement(self):
-    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    username = raw_input('Please enter your username for the profile [%s]@%s: ' % (self.username, self.domain))
     if username:
       self.username = username
     entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username

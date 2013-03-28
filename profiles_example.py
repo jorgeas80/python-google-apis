@@ -231,7 +231,7 @@ class ProfilesSample(object):
       print('Entry updated')
       self.PrintEntry(entry)
 
-  def UpdateProfile(self):
+  def UpdateUserDefinedFields(self):
     username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
     if username:
       self.username = username
@@ -268,6 +268,93 @@ class ProfilesSample(object):
       print e
     
 
+  def AddRelationElement(self):
+    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    if username:
+      self.username = username
+    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
+
+    try:
+      #Get profile object
+      entry = self.gd_client.GetProfile(entry_uri)
+
+      # Ask for relation name and look for it
+      relation_name = raw_input('Please enter the relation name (ENTER to cancel): ')
+      if not relation_name:
+        return
+
+      found = False
+      for relation in entry.relation:
+        if relation.rel == relation_name:
+          found = True
+
+      if not found:
+        raise Exception('Relation not found.')
+
+      relation_element = raw_input('Please enter the additional element for relation %s (ENTER to cancel): ' % relation_name)
+      if not relation_element:
+        return    
+
+      #Update the relation
+      entry.relation.append(gdata.contacts.data.Relation(
+            rel=relation_name, text=relation_element))
+
+      self.gd_client.Update(entry)
+
+    except Exception, e:
+      print e
+
+    else:
+      print('Entry updated')
+      self.PrintEntry(entry)
+
+
+
+  def DeleteRelationElement(self):
+    username = raw_input('Please enter your username for the profile [%s]: ' % self.username)
+    if username:
+      self.username = username
+    entry_uri = self.gd_client.GetFeedUri('profiles')+'/'+self.username
+
+    try:
+      #Get profile object
+      entry = self.gd_client.GetProfile(entry_uri)
+
+      #Get input data
+      relation_name = raw_input('Please enter the relation name (ENTER to cancel): ')
+      if not relation_name:
+        return
+  
+      #Look for the relation
+      found = False
+      for relation in entry.relation:
+        if relation.rel == relation_name:
+          found = True
+
+      if not found:
+        raise Exception('Relation not found.')
+
+
+      relation_element = raw_input('Please enter the element of relation %s to delete (ENTER to cancel): ' % relation_name)
+      if not relation_element:
+        return  
+
+      pos = 0
+      for relation in entry.relation:
+        if relation.rel == relation_name:
+          if relation.text == relation_element:
+            del entry.relation[pos]
+
+        pos = pos + 1
+
+      self.gd_client.Update(entry)
+
+    except Exception, e:
+      print e
+
+    else:
+      print('Entry updated')
+      self.PrintEntry(entry)
 
   def PrintMenu(self):
     """Displays a menu of options for the user to choose from."""
@@ -276,7 +363,9 @@ class ProfilesSample(object):
            '2) Get a single Profile.\n'
            '3) Add user defined field to a single Profile.\n'
            '4) Delete user defined field from a single Profile.\n'
-           '5) Exit.')
+           '5) Add element to a Profile\'s relation.\n'
+           '6) Delete element from a Profile\'s relation.\n'
+           '0) Exit.')
 
   def GetMenuChoice(self, maximum):
     """Retrieves the menu selection from the user.
@@ -293,11 +382,11 @@ class ProfilesSample(object):
       try:
         num = int(key_input)
       except ValueError:
-        print 'Invalid choice. Please choose a value between 1 and', maximum
+        print 'Invalid choice. Please choose a value between 0 and', maximum
         continue
 
-      if num > maximum or num < 1:
-        print 'Invalid choice. Please choose a value between 1 and', maximum
+      if num > maximum or num < 0:
+        print 'Invalid choice. Please choose a value between 0 and', maximum
       else:
         return num
 
@@ -306,15 +395,19 @@ class ProfilesSample(object):
     try:
       while True:
         self.PrintMenu()
-        choice = self.GetMenuChoice(5)
+        choice = self.GetMenuChoice(6)
         if choice == 1:
           self.ListAllProfiles()
         elif choice == 2:
           self.SelectProfile()
         elif choice == 3:
-          self.UpdateProfile()
+          self.UpdateUserDefinedFields()
         elif choice == 4:
           self.DeleteUserDefinedField()
+        elif choice == 5:
+          self.AddRelationElement()
+        elif choice == 6:
+          self.DeleteRelationElement()
         else:
           return
 
